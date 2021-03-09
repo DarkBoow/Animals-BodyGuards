@@ -1,9 +1,4 @@
-name: VaguesdeMonstres
+name: AnimalsBodyGuards
 author: DarkBow_
 version: 0.1
-main: fr.darkbow_.vaguesdemonstres.VaguesdeMonstres
-commands:
-  vaguesdemonstres:
-    description: Active les vagues de monstres
-    permission:
-    aliases: [vdm, monsterwaves, mw]
+main: fr.darkbow_.animalsbodyguards.AnimalsBodyGuards

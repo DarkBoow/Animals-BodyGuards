@@ -1,8 +1,6 @@
-fr\darkbow_\vaguesdemonstres\scoreboard\ScoreboardSign$1.class
-fr\darkbow_\vaguesdemonstres\VaguesdeMonstres.class
-fr\darkbow_\vaguesdemonstres\MonstresEvenement.class
-fr\darkbow_\vaguesdemonstres\Titles.class
-fr\darkbow_\vaguesdemonstres\Taches.class
-fr\darkbow_\vaguesdemonstres\CommandVaguesdeMonstres.class
-fr\darkbow_\vaguesdemonstres\scoreboard\ScoreboardSign$VirtualTeam.class
-fr\darkbow_\vaguesdemonstres\scoreboard\ScoreboardSign.class
+fr\darkbow_\animalsbodyguards\AnimalsBodyGuards.class
+fr\darkbow_\animalsbodyguards\Titles.class
+fr\darkbow_\animalsbodyguards\scoreboard\ScoreboardSign$1.class
+fr\darkbow_\animalsbodyguards\scoreboard\ScoreboardSign$VirtualTeam.class
+fr\darkbow_\animalsbodyguards\scoreboard\ScoreboardSign.class
+fr\darkbow_\animalsbodyguards\AnimalsEvent.class
