@@ -1,14 +1,10 @@
 package fr.darkbow_.animalsbodyguards;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.*;
 
 import java.util.*;
 
@@ -19,82 +15,35 @@ public class AnimalsEvent implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
-        if(event.getEntity() instanceof Animals || AnimalsBodyGuards.PassiveEntities.contains(event.getEntityType())){
+        if(!main.getBodyGuardsTypes().contains(event.getEntityType()) && (event.getEntity() instanceof Animals || AnimalsBodyGuards.PassiveEntities.contains(event.getEntityType()))){
             Entity target = null;
             if(event.getDamager() instanceof Projectile) {
                 target = (Entity) ((Projectile) event.getDamager()).getShooter();
             } else {
-                event.getDamager();
+                target = event.getDamager();
             }
 
-            if(main.getBodyGuardsTypes() != null){
-                if(!main.getBodyGuardsTypes().isEmpty()){
-                    Random r = new Random();
-                    int creaturetype = r.nextInt(main.getBodyGuardsTypes().size());
+            Entity bodyguard = main.spawnBodyGuard(event.getEntity(), target);
+            if(bodyguard instanceof Creature && target instanceof LivingEntity){
+                ((Creature) bodyguard).setTarget((LivingEntity) target);
+                if(main.getDefendOwner().get(event.getEntity()).contains(target)){
+                    main.getDefendOwner().get(event.getEntity()).add(target);
+                }
+            }
+        }
 
-                    if(main.getBodyGuardsTypes().get(creaturetype) != null){
-                        Entity bodyguard = Objects.requireNonNull(event.getEntity().getLocation().getWorld()).spawnEntity(event.getEntity().getLocation(), main.getBodyGuardsTypes().get(creaturetype));
-                        if(!main.getBodyguards().containsKey(event.getEntity())){
-                            main.getBodyguards().put(event.getEntity(), new ArrayList<>());
-                        }
-                        main.getBodyguards().get(event.getEntity()).add(bodyguard);
-
-                        String entityname = event.getEntityType().toString();
-                        if(event.getEntity().getCustomName() == null){
-                            if(main.getAnimalstypescount().containsKey(event.getEntityType())){
-                                main.getAnimalstypescount().put(event.getEntityType(), main.getAnimalstypescount().get(event.getEntityType()) + 1);
-                            } else {
-                                main.getAnimalstypescount().put(event.getEntityType(), 1);
-                            }
-
-                            String prefix = "th";
-                            switch (main.getAnimalstypescount().get(event.getEntityType())){
-                                case 1:
-                                    prefix = "st";
-                                    break;
-                                case 2:
-                                    prefix = "nd";
-                                    break;
-                                case 3:
-                                    prefix = "rd";
-                                    break;
-                            }
-                            event.getEntity().setCustomName("§a§l" + main.getAnimalstypescount().get(event.getEntityType()) + prefix + " §6§l" + event.getEntityType().toString());
-                            event.getEntity().setCustomNameVisible(true);
-                        }
-                        entityname = event.getEntity().getCustomName();
-
-                        bodyguard.setCustomName("§a§l" + entityname + "§b§l's §6§lBodyGuard");
-                        bodyguard.setCustomNameVisible(true);
-
-                        if(bodyguard instanceof Creature){
-                            ((Creature) bodyguard).setRemoveWhenFarAway(true);
-
-                            boolean cancelled = false;
-                            if(target != null){
-                                if(!main.getBodyguards().isEmpty()){
-                                    if(main.getBodyguards().containsKey(target)){
-                                        if(main.getBodyguards().get(target).contains(event.getEntity())){
-                                            cancelled = true;
-                                        }
-                                    }
-
-                                    if(!cancelled){
-                                        for(List<Entity> list : main.getBodyguards().values()){
-                                            if(!cancelled && list.contains(event.getEntity())){
-                                                cancelled = true;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if(!cancelled){
-                                ((Creature) bodyguard).setTarget((LivingEntity) target);
-                            }
+        if(event.getEntity() instanceof LivingEntity){
+            LivingEntity entity = (LivingEntity) event.getEntity();
+            if(entity.getHealth() - event.getFinalDamage() <= 0){
+                if(!main.getDefendOwner().isEmpty()){
+                    for(Map.Entry<Entity,List<Entity>> map : main.getDefendOwner().entrySet()){
+                        if(map.getValue().contains(event.getEntity())){
+                            map.getValue().remove(event.getEntity());
                         }
 
-
+                        if(map.getValue().isEmpty()){
+                            main.getDefendOwner().remove(map.getKey());
+                        }
                     }
                 }
             }
@@ -105,48 +54,7 @@ public class AnimalsEvent implements Listener {
     public void onEntityDamage(EntityDamageEvent event){
         if(event.getEntity() instanceof Animals || AnimalsBodyGuards.PassiveEntities.contains(event.getEntityType())){
             if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK){
-                Random r = new Random();
-                int creaturetype = r.nextInt(main.getBodyGuardsTypes().size());
-                while(main.getBodyGuardsTypes().get(creaturetype) == EntityType.ENDER_DRAGON && event.getEntity().getWorld().getEnvironment() != World.Environment.THE_END){
-                    creaturetype = r.nextInt(main.getBodyGuardsTypes().size());
-                }
-
-                Entity bodyguard = Objects.requireNonNull(event.getEntity().getLocation().getWorld()).spawnEntity(event.getEntity().getLocation(), main.getBodyGuardsTypes().get(creaturetype));
-                String entityname = event.getEntityType().toString();
-                if(event.getEntity().getCustomName() == null){
-                    if(main.getAnimalstypescount().containsKey(event.getEntityType())){
-                        main.getAnimalstypescount().put(event.getEntityType(), main.getAnimalstypescount().get(event.getEntityType()) + 1);
-                    } else {
-                        main.getAnimalstypescount().put(event.getEntityType(), 1);
-                    }
-
-                    String prefix = "th";
-                    switch (main.getAnimalstypescount().get(event.getEntityType())){
-                        case 1:
-                            prefix = "st";
-                            break;
-                        case 2:
-                            prefix = "nd";
-                            break;
-                        case 3:
-                            prefix = "rd";
-                            break;
-                    }
-                    event.getEntity().setCustomName("§a§l" + main.getAnimalstypescount().get(event.getEntityType()) + prefix + " §6§l" + event.getEntityType().toString());
-                    event.getEntity().setCustomNameVisible(true);
-                }
-                entityname = event.getEntity().getCustomName();
-
-                bodyguard.setCustomName("§a§l" + entityname + "§b§l's §6§lBodyGuard");
-                bodyguard.setCustomNameVisible(true);
-                if(bodyguard instanceof Creature){
-                    ((Creature) bodyguard).setRemoveWhenFarAway(true);
-                }
-
-                if(!main.getBodyguards().containsKey(event.getEntity())){
-                    main.getBodyguards().put(event.getEntity(), new ArrayList<>());
-                }
-                main.getBodyguards().get(event.getEntity()).add(bodyguard);
+                main.spawnBodyGuard(event.getEntity(), null);
             }
         }
     }
@@ -179,14 +87,24 @@ public class AnimalsEvent implements Listener {
                 }
             }
 
+            Entity master = null;
             if(!cancelled){
                 for(Map.Entry<Entity, List<Entity>> map : main.getBodyguards().entrySet()){
                     if(map.getValue().contains(event.getEntity())){
+                        master = map.getKey();
                         if(event.getTarget() == map.getKey()){
                             cancelled = true;
                             event.setCancelled(true);
                             Bukkit.broadcastMessage("2");
                         }
+                    }
+                }
+            }
+
+            if(master != null){
+                if(main.getDefendOwner().containsKey(master)){
+                    if(!main.getDefendOwner().get(master).contains(event.getTarget())){
+                        cancelled = true;
                     }
                 }
             }

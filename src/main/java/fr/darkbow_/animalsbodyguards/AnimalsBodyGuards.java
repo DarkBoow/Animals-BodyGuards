@@ -1,6 +1,7 @@
 package fr.darkbow_.animalsbodyguards;
 
 import fr.darkbow_.animalsbodyguards.scoreboard.ScoreboardSign;
+import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,6 +18,9 @@ public class AnimalsBodyGuards extends JavaPlugin {
     private List<EntityType> bodyguardstypes;
     private Map<Entity, Entity> damagers;
     private Map<EntityType, Integer> animalstypescount;
+
+    private Map<Entity, List<Entity>> DefendOwner;
+    private List<Entity> targets;
 
     static List<EntityType> PassiveEntities;
 
@@ -35,6 +39,8 @@ public class AnimalsBodyGuards extends JavaPlugin {
         this.bodyguardstypes = new ArrayList<>();
         this.damagers = new HashMap<>();
         this.animalstypescount = new HashMap<>();
+        this.DefendOwner = new HashMap<>();
+        this.targets = new ArrayList<>();
 
         getServer().getPluginManager().registerEvents(new AnimalsEvent(this), this);
 
@@ -108,24 +114,90 @@ public class AnimalsBodyGuards extends JavaPlugin {
         System.out.println("[Animals BodyGuards] Plugin OFF!");
     }
 
-    public void spawnBodyGuard(Entity entity){
-        Creature bodyguard = null;
+    public Entity spawnBodyGuard(Entity damagedentity, Entity target){
+        Random r = new Random();
+        int creaturetype = r.nextInt(getBodyGuardsTypes().size());
 
-        if(entity != null){
-            Random r = new Random();
-            int creaturetype = r.nextInt(bodyguardstypes.size());
-            if(bodyguardstypes != null){
-                if(bodyguardstypes.get(creaturetype) != null){
-                    bodyguard = (Creature) Objects.requireNonNull(entity.getLocation().getWorld()).spawnEntity(entity.getLocation(), bodyguardstypes.get(creaturetype));
-                    bodyguard.setRemoveWhenFarAway(true);
-                    if(!bodyguards.containsKey(entity)){
-                        bodyguards.put(entity, new ArrayList<>());
+        if(damagedentity.getWorld().getEnvironment() != World.Environment.THE_END){
+            while(getBodyGuardsTypes().get(creaturetype) == EntityType.ENDER_DRAGON){
+                creaturetype = r.nextInt(getBodyGuardsTypes().size());
+            }
+        }
+
+        Entity bodyguard = Objects.requireNonNull(damagedentity.getLocation().getWorld()).spawnEntity(damagedentity.getLocation(), getBodyGuardsTypes().get(creaturetype));
+        if(getBodyGuardsTypes().get(creaturetype) == EntityType.ENDER_DRAGON){
+            EnderDragon dragon = (EnderDragon) bodyguard;
+            dragon.setPhase(EnderDragon.Phase.CHARGE_PLAYER);
+        }
+
+        String entityname = damagedentity.getType().name();
+
+        if(damagedentity.getCustomName() == null){
+            if(getAnimalstypescount().containsKey(damagedentity.getType())){
+                getAnimalstypescount().put(damagedentity.getType(), getAnimalstypescount().get(damagedentity.getType()) + 1);
+            } else {
+                getAnimalstypescount().put(damagedentity.getType(), 1);
+            }
+
+            String prefix = "th";
+            switch (getAnimalstypescount().get(damagedentity.getType())){
+                case 1:
+                    prefix = "st";
+                    break;
+                case 2:
+                    prefix = "nd";
+                    break;
+                case 3:
+                    prefix = "rd";
+                    break;
+            }
+            damagedentity.setCustomName("§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString());
+            damagedentity.setCustomNameVisible(true);
+        }
+        entityname = damagedentity.getCustomName();
+
+        bodyguard.setCustomName("§a§l" + entityname + "§b§l's §6§lBodyGuard");
+        bodyguard.setCustomNameVisible(true);
+        if(bodyguard instanceof Creature){
+            ((Creature) bodyguard).setRemoveWhenFarAway(true);
+        }
+
+        if(!getBodyguards().containsKey(damagedentity)){
+            getBodyguards().put(damagedentity, new ArrayList<>());
+        }
+        getBodyguards().get(damagedentity).add(bodyguard);
+
+        boolean cancelled = false;
+        if(target instanceof LivingEntity){
+            if(!getBodyguards().isEmpty()){
+                if(getBodyguards().containsKey(target)){
+                    if(getBodyguards().get(target).contains(damagedentity)){
+                        cancelled = true;
                     }
+                }
 
-                    bodyguards.get(entity).add(bodyguard);
+                if(!cancelled){
+                    for(List<Entity> list : getBodyguards().values()){
+                        if (list.contains(damagedentity)) {
+                            cancelled = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
+
+        if(!cancelled && target instanceof LivingEntity){
+            if(bodyguard instanceof Creature){
+                ((Creature) bodyguard).setTarget((LivingEntity) target);
+            } else {
+                if(bodyguard instanceof Slime){
+                    ((Slime) bodyguard).setTarget((LivingEntity) target);
+                }
+            }
+        }
+
+        return bodyguard;
     }
 
     public Map<Player, ScoreboardSign> getBoards(){
@@ -146,5 +218,13 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     public Map<EntityType, Integer> getAnimalstypescount() {
         return animalstypescount;
+    }
+
+    public Map<Entity, List<Entity>> getDefendOwner() {
+        return DefendOwner;
+    }
+
+    public List<Entity> getTargets() {
+        return targets;
     }
 }
