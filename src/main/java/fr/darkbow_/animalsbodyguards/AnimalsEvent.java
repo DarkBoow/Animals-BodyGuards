@@ -15,6 +15,13 @@ public class AnimalsEvent implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
+        if(event.getEntity() instanceof EnderCrystal){
+            Bukkit.broadcastMessage("wazaa");
+        }
+
+        if(event.getDamager() instanceof EnderCrystal){
+            Bukkit.broadcastMessage("YAAAAAAAAAAAAA");
+        }
         if(!main.getBodyGuardsTypes().contains(event.getEntityType()) && (event.getEntity() instanceof Animals || AnimalsBodyGuards.PassiveEntities.contains(event.getEntityType()))){
             Entity target = null;
             if(event.getDamager() instanceof Projectile) {
@@ -26,7 +33,11 @@ public class AnimalsEvent implements Listener {
             Entity bodyguard = main.spawnBodyGuard(event.getEntity(), target);
             if(bodyguard instanceof Creature && target instanceof LivingEntity){
                 ((Creature) bodyguard).setTarget((LivingEntity) target);
-                if(main.getDefendOwner().get(event.getEntity()).contains(target)){
+                if(!main.getDefendOwner().containsKey(event.getEntity())){
+                    main.getDefendOwner().put(event.getEntity(), new ArrayList<>());
+                }
+
+                if(!main.getDefendOwner().get(event.getEntity()).contains(target)){
                     main.getDefendOwner().get(event.getEntity()).add(target);
                 }
             }
@@ -43,6 +54,16 @@ public class AnimalsEvent implements Listener {
 
                         if(map.getValue().isEmpty()){
                             main.getDefendOwner().remove(map.getKey());
+                        } else {
+                            if(map.getKey() instanceof LivingEntity){
+                                for(Entity bodyguard : main.getBodyguards().get(map.getKey())){
+                                    if(bodyguard instanceof Creature){
+                                        if(((Creature) bodyguard).getTarget() == null || !Objects.requireNonNull(((Creature) bodyguard).getTarget()).isDead()){
+                                            ((Creature) bodyguard).setTarget((LivingEntity) main.getDefendOwner().get(map.getKey()).get(main.getDefendOwner().get(map.getKey()).size() - 1));
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -105,6 +126,22 @@ public class AnimalsEvent implements Listener {
                 if(main.getDefendOwner().containsKey(master)){
                     if(!main.getDefendOwner().get(master).contains(event.getTarget())){
                         cancelled = true;
+                    }
+                }
+            }
+
+            if(cancelled){
+                event.setCancelled(true);
+            } else {
+                if(main.getBodyguards().containsKey(event.getTarget())){
+                    if(!main.getBodyguards().get(event.getTarget()).isEmpty()){
+                        for(Entity bodyguard : main.getBodyguards().get(event.getTarget())){
+                            if(bodyguard instanceof Creature){
+                                if(((Creature) bodyguard).getTarget() == null || Objects.requireNonNull(((Creature) bodyguard).getTarget()).isDead()){
+                                    ((Creature) bodyguard).setTarget((LivingEntity) event.getEntity());
+                                }
+                            }
+                        }
                     }
                 }
             }
