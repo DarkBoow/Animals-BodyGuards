@@ -15,14 +15,19 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     private Map<Player, ScoreboardSign> boards;
     private Map<Entity, List<Entity>> bodyguards;
+    private Map<Entity, Entity> bodyguardsowner;
     private List<EntityType> bodyguardstypes;
     private Map<Entity, Entity> damagers;
     private Map<EntityType, Integer> animalstypescount;
+    private Map<Entity, String> previouscustomname;
+    private Map<Entity, Boolean> CustomNameWasVisible;
 
     private Map<Entity, List<Entity>> DefendOwner;
-    private List<Entity> targets;
+    private Map<Entity, List<Entity>> targets;
 
-    static List<EntityType> PassiveEntities;
+    private List<EntityType> PassiveEntityTypes;
+    private List<Entity> testsmorts;
+    private HashMap<Entity, Entity> lastdamager;
 
     public AnimalsBodyGuards getInstance() {
         return this.instance;
@@ -34,46 +39,51 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
         this.boards = new HashMap<>();
 
-        PassiveEntities = new ArrayList<>();
+        this.PassiveEntityTypes = new ArrayList<>();
         this.bodyguards = new HashMap<>();
         this.bodyguardstypes = new ArrayList<>();
         this.damagers = new HashMap<>();
         this.animalstypescount = new HashMap<>();
         this.DefendOwner = new HashMap<>();
-        this.targets = new ArrayList<>();
+        this.targets = new HashMap<>();
+        this.bodyguardsowner = new HashMap<>();
+        this.previouscustomname = new HashMap<>();
+        this.CustomNameWasVisible = new HashMap<>();
+        this.testsmorts = new ArrayList<>();
+        this.lastdamager = new HashMap<>();
 
         getServer().getPluginManager().registerEvents(new AnimalsEvent(this), this);
 
-        PassiveEntities.add(EntityType.HORSE);
-        PassiveEntities.add(EntityType.MULE);
-        PassiveEntities.add(EntityType.TURTLE);
-        PassiveEntities.add(EntityType.PIG);
-        PassiveEntities.add(EntityType.BAT);
-        PassiveEntities.add(EntityType.CAT);
-        PassiveEntities.add(EntityType.CHICKEN);
-        PassiveEntities.add(EntityType.COD);
-        PassiveEntities.add(EntityType.BEE);
-        PassiveEntities.add(EntityType.COW);
-        PassiveEntities.add(EntityType.DOLPHIN);
-        PassiveEntities.add(EntityType.DONKEY);
-        PassiveEntities.add(EntityType.FOX);
-        PassiveEntities.add(EntityType.IRON_GOLEM);
-        PassiveEntities.add(EntityType.LLAMA);
-        PassiveEntities.add(EntityType.MUSHROOM_COW);
-        PassiveEntities.add(EntityType.OCELOT);
-        PassiveEntities.add(EntityType.PANDA);
-        PassiveEntities.add(EntityType.PARROT);
-        PassiveEntities.add(EntityType.PUFFERFISH);
-        PassiveEntities.add(EntityType.RABBIT);
-        PassiveEntities.add(EntityType.SALMON);
-        PassiveEntities.add(EntityType.SHEEP);
-        PassiveEntities.add(EntityType.SNOWMAN);
-        PassiveEntities.add(EntityType.SQUID);
-        PassiveEntities.add(EntityType.STRIDER);
-        PassiveEntities.add(EntityType.TRADER_LLAMA);
-        PassiveEntities.add(EntityType.TROPICAL_FISH);
-        PassiveEntities.add(EntityType.VILLAGER);
-        PassiveEntities.add(EntityType.WANDERING_TRADER);
+        PassiveEntityTypes.add(EntityType.HORSE);
+        PassiveEntityTypes.add(EntityType.MULE);
+        PassiveEntityTypes.add(EntityType.TURTLE);
+        PassiveEntityTypes.add(EntityType.PIG);
+        PassiveEntityTypes.add(EntityType.BAT);
+        PassiveEntityTypes.add(EntityType.CAT);
+        PassiveEntityTypes.add(EntityType.CHICKEN);
+        PassiveEntityTypes.add(EntityType.COD);
+        PassiveEntityTypes.add(EntityType.BEE);
+        PassiveEntityTypes.add(EntityType.COW);
+        PassiveEntityTypes.add(EntityType.DOLPHIN);
+        PassiveEntityTypes.add(EntityType.DONKEY);
+        PassiveEntityTypes.add(EntityType.FOX);
+        PassiveEntityTypes.add(EntityType.IRON_GOLEM);
+        PassiveEntityTypes.add(EntityType.LLAMA);
+        PassiveEntityTypes.add(EntityType.MUSHROOM_COW);
+        PassiveEntityTypes.add(EntityType.OCELOT);
+        PassiveEntityTypes.add(EntityType.PANDA);
+        PassiveEntityTypes.add(EntityType.PARROT);
+        PassiveEntityTypes.add(EntityType.PUFFERFISH);
+        PassiveEntityTypes.add(EntityType.RABBIT);
+        PassiveEntityTypes.add(EntityType.SALMON);
+        PassiveEntityTypes.add(EntityType.SHEEP);
+        PassiveEntityTypes.add(EntityType.SNOWMAN);
+        PassiveEntityTypes.add(EntityType.SQUID);
+        PassiveEntityTypes.add(EntityType.STRIDER);
+        PassiveEntityTypes.add(EntityType.TRADER_LLAMA);
+        PassiveEntityTypes.add(EntityType.TROPICAL_FISH);
+        PassiveEntityTypes.add(EntityType.VILLAGER);
+        PassiveEntityTypes.add(EntityType.WANDERING_TRADER);
 
 
         bodyguardstypes.add(EntityType.CAVE_SPIDER);
@@ -111,10 +121,36 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for(Map.Entry<Entity, List<Entity>> bodyguardsmap : getBodyguards().entrySet()){
+            if(previouscustomname.containsKey(bodyguardsmap.getKey())){
+                bodyguardsmap.getKey().setCustomName(previouscustomname.get(bodyguardsmap.getKey()));
+            }
+
+            if(CustomNameWasVisible.containsKey(bodyguardsmap.getKey())){
+                bodyguardsmap.getKey().setCustomNameVisible(CustomNameWasVisible.get(bodyguardsmap.getKey()));
+            }
+
+            for(Entity bodyguard : bodyguardsmap.getValue()){
+                bodyguard.remove();
+            }
+        }
+
         System.out.println("[Animals BodyGuards] Plugin OFF!");
     }
 
     public Entity spawnBodyGuard(Entity damagedentity, Entity target){
+        if(!previouscustomname.containsKey(damagedentity)){
+            previouscustomname.put(damagedentity, damagedentity.getCustomName());
+        }
+
+        if(!CustomNameWasVisible.containsKey(damagedentity)){
+            CustomNameWasVisible.put(damagedentity, damagedentity.isCustomNameVisible());
+        }
+
+        if(!getDefendOwner().containsKey(damagedentity)){
+            getDefendOwner().put(damagedentity, new ArrayList<>());
+        }
+
         Random r = new Random();
         int creaturetype = r.nextInt(getBodyGuardsTypes().size());
 
@@ -166,6 +202,8 @@ public class AnimalsBodyGuards extends JavaPlugin {
             getBodyguards().put(damagedentity, new ArrayList<>());
         }
         getBodyguards().get(damagedentity).add(bodyguard);
+
+        getBodyguardsowner().put(bodyguard, damagedentity);
 
         boolean cancelled = false;
         if(target instanceof LivingEntity){
@@ -224,7 +262,27 @@ public class AnimalsBodyGuards extends JavaPlugin {
         return DefendOwner;
     }
 
-    public List<Entity> getTargets() {
+    public Map<Entity, List<Entity>> getTargets() {
         return targets;
+    }
+
+    public List<EntityType> getPassiveEntityTypes() {
+        return PassiveEntityTypes;
+    }
+
+    public Map<Entity, Entity> getBodyguardsowner() {
+        return bodyguardsowner;
+    }
+
+    public Map<Entity, Boolean> getCustomNameWasVisible() {
+        return CustomNameWasVisible;
+    }
+
+    public List<Entity> getTestsmorts() {
+        return testsmorts;
+    }
+
+    public HashMap<Entity, Entity> getLastdamager() {
+        return lastdamager;
     }
 }
