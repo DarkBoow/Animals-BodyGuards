@@ -29,15 +29,19 @@ public class AnimalsBodyGuards extends JavaPlugin {
     private List<Entity> testsmorts;
     private HashMap<Entity, Entity> lastdamager;
 
+    private Map<String, String> configurationoptions;
+
     public AnimalsBodyGuards getInstance() {
         return this.instance;
     }
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         instance = this;
 
         this.boards = new HashMap<>();
+        this.configurationoptions = new HashMap<>();
 
         this.PassiveEntityTypes = new ArrayList<>();
         this.bodyguards = new HashMap<>();
@@ -115,6 +119,8 @@ public class AnimalsBodyGuards extends JavaPlugin {
         bodyguardstypes.add(EntityType.ZOGLIN);
         bodyguardstypes.add(EntityType.ZOMBIE_VILLAGER);
         bodyguardstypes.add(EntityType.ZOMBIFIED_PIGLIN);
+
+        configurationoptions.put("bodyguards_die_with_their_master", getConfig().getString("bodyguards_die_with_their_master"));
 
         System.out.println("[Animals BodyGuards] Plugin ON!");
     }
@@ -284,5 +290,9 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     public HashMap<Entity, Entity> getLastdamager() {
         return lastdamager;
+    }
+
+    public Map<String, String> getConfigurationoptions() {
+        return configurationoptions;
     }
 }

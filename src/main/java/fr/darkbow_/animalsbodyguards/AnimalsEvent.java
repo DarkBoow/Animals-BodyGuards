@@ -23,9 +23,9 @@ public class AnimalsEvent implements Listener {
             damager = event.getDamager();
         }
 
-        if(event.getEntity() instanceof Player){
+        /*if(event.getEntity() instanceof Player){
             Bukkit.broadcastMessage("§a§l" + damager.getType().name());
-        }
+        }*/
 
         boolean cancelled = false;
 
@@ -123,25 +123,27 @@ public class AnimalsEvent implements Listener {
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event){
-        if(main.getBodyguards().containsKey(event.getEntity()) || main.getBodyguardsowner().containsKey(event.getEntity())){
-            if(event.getEntity() instanceof LivingEntity){
-                if(((LivingEntity) event.getEntity()).getHealth() - event.getFinalDamage() <= 0){
-                    String deathmessage = event.getEntity().getCustomName() + " §rest mort de §b§l" + event.getCause();
-                    if(main.getLastdamager().containsKey(event.getEntity())){
-                        deathmessage += " §rpar §a§l" + main.getLastdamager().get(event.getEntity()).getCustomName();
-                        main.getLastdamager().remove(event.getEntity());
+        if(event.getCause() != EntityDamageEvent.DamageCause.VOID && !event.getCause().name().contains("ENTITY") && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE){
+            if(main.getBodyguards().containsKey(event.getEntity()) || main.getBodyguardsowner().containsKey(event.getEntity())){
+                if(event.getEntity() instanceof LivingEntity){
+                    if(((LivingEntity) event.getEntity()).getHealth() - event.getFinalDamage() <= 0){
+                        String deathmessage = event.getEntity().getCustomName() + " §rest mort de §b§l" + event.getCause();
+                        if(main.getLastdamager().containsKey(event.getEntity())){
+                            deathmessage += " §rpar §a§l" + main.getLastdamager().get(event.getEntity()).getCustomName();
+                            main.getLastdamager().remove(event.getEntity());
+                        }
+
+                        deathmessage += "§r.";
+
+                        /*Bukkit.broadcastMessage(deathmessage);*/
                     }
-
-                    deathmessage += "§r.";
-
-                    Bukkit.broadcastMessage(deathmessage);
                 }
             }
-        }
 
-        if(event.getEntity() instanceof Animals || main.getPassiveEntityTypes().contains(event.getEntityType())){
-            if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.VOID){
-                main.spawnBodyGuard(event.getEntity(), null);
+            if(event.getEntity() instanceof Animals || main.getPassiveEntityTypes().contains(event.getEntityType())){
+                if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.VOID){
+                    main.spawnBodyGuard(event.getEntity(), null);
+                }
             }
         }
     }
@@ -150,7 +152,7 @@ public class AnimalsEvent implements Listener {
     public void onSpawnEntity(CreatureSpawnEvent event){
         if(event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG){
             main.getTestsmorts().add(event.getEntity());
-            Bukkit.broadcastMessage("§aNouvelle Entité Spawnée !");
+            /*Bukkit.broadcastMessage("§aNouvelle Entité Spawnée !");*/
         }
     }
 
@@ -181,11 +183,17 @@ public class AnimalsEvent implements Listener {
                 main.getDefendOwner().remove(event.getEntity());
             }
 
-            /*for(Entity bodyguard : main.getBodyguards().get(event.getEntity())){
-                main.getBodyguardsowner().remove(bodyguard);
-                bodyguard.remove();
-            }*/
+            if(Boolean.parseBoolean(main.getConfigurationoptions().get("bodyguards_die_with_their_master"))){
+                if(main.getBodyguards().get(event.getEntity()).size() > 0){
+                    for(Entity bodyguard : main.getBodyguards().get(event.getEntity())){
+                        main.getBodyguardsowner().remove(bodyguard);
+                        main.getLastdamager().remove(bodyguard);
+                        bodyguard.remove();
+                    }
+                }
+            }
 
+            main.getLastdamager().remove(event.getEntity());
             main.getBodyguards().remove(event.getEntity());
         }
 
