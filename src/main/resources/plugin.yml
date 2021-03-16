@@ -2,3 +2,8 @@ name: AnimalsBodyGuards
 author: DarkBow_
 version: 0.1
 main: fr.darkbow_.animalsbodyguards.AnimalsBodyGuards
+commands:
+  animalsbodyguards:
+    description: Every time you hurt an Animal, it will spawn a bodyguard to defend it
+    aliases: [abg, abguards, abodyguards, animalsbodyg, animalsbg]
+    permission: animalsbodyguards.admin

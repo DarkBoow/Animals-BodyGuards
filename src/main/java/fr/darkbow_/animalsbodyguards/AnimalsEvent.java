@@ -251,7 +251,10 @@ public class AnimalsEvent implements Listener {
                 if(!(event.getTarget() instanceof Player)){
                     boolean cancelled = false;
                     if(main.getDefendOwner().containsKey(main.getBodyguardsowner().get(event.getEntity()))){
-                        if(!main.getDefendOwner().get(main.getBodyguardsowner().get(event.getEntity())).isEmpty()){
+                        if(main.getDefendOwner().get(main.getBodyguardsowner().get(event.getEntity())).isEmpty()){
+                            event.setCancelled(true);
+                            cancelled = true;
+                        } else {
                             if(!main.getDefendOwner().get(main.getBodyguardsowner().get(event.getEntity())).contains(event.getTarget())){
                                 event.setCancelled(true);
                                 cancelled = true;

@@ -1,6 +1,8 @@
 package fr.darkbow_.animalsbodyguards;
 
+import fr.darkbow_.animalsbodyguards.commands.CommandAnimalsBodyGuards;
 import fr.darkbow_.animalsbodyguards.scoreboard.ScoreboardSign;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -57,6 +59,7 @@ public class AnimalsBodyGuards extends JavaPlugin {
         this.lastdamager = new HashMap<>();
 
         getServer().getPluginManager().registerEvents(new AnimalsEvent(this), this);
+        getCommand("animalsbodyguards").setExecutor(new CommandAnimalsBodyGuards(this));
 
         PassiveEntityTypes.add(EntityType.HORSE);
         PassiveEntityTypes.add(EntityType.MULE);
@@ -99,7 +102,6 @@ public class AnimalsBodyGuards extends JavaPlugin {
         bodyguardstypes.add(EntityType.ENDER_DRAGON);
         bodyguardstypes.add(EntityType.EVOKER);
         bodyguardstypes.add(EntityType.GHAST);
-        bodyguardstypes.add(EntityType.GIANT);
         bodyguardstypes.add(EntityType.HOGLIN);
         bodyguardstypes.add(EntityType.HUSK);
         bodyguardstypes.add(EntityType.ILLUSIONER);
@@ -121,6 +123,11 @@ public class AnimalsBodyGuards extends JavaPlugin {
         bodyguardstypes.add(EntityType.ZOMBIFIED_PIGLIN);
 
         configurationoptions.put("bodyguards_die_with_their_master", getConfig().getString("bodyguards_die_with_their_master"));
+
+        // All you have to do is adding the following two lines in your onEnable method.
+        // You can find the plugin ids of your plugins on the page https://bstats.org/what-is-my-plugin-id
+        int pluginId = 10684; // <-- Replace with the id of your plugin!
+        Metrics metrics = new Metrics(this, pluginId);
 
         System.out.println("[Animals BodyGuards] Plugin ON!");
     }
