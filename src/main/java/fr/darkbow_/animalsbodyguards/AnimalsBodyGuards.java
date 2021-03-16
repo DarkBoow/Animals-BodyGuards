@@ -22,13 +22,13 @@ public class AnimalsBodyGuards extends JavaPlugin {
     private Map<Entity, Entity> damagers;
     private Map<EntityType, Integer> animalstypescount;
     private Map<Entity, String> previouscustomname;
+    private Map<Entity, String> customname;
     private Map<Entity, Boolean> CustomNameWasVisible;
 
     private Map<Entity, List<Entity>> DefendOwner;
     private Map<Entity, List<Entity>> targets;
 
     private List<EntityType> PassiveEntityTypes;
-    private List<Entity> testsmorts;
     private HashMap<Entity, Entity> lastdamager;
 
     private Map<String, String> configurationoptions;
@@ -55,8 +55,8 @@ public class AnimalsBodyGuards extends JavaPlugin {
         this.bodyguardsowner = new HashMap<>();
         this.previouscustomname = new HashMap<>();
         this.CustomNameWasVisible = new HashMap<>();
-        this.testsmorts = new ArrayList<>();
         this.lastdamager = new HashMap<>();
+        this.customname = new HashMap<>();
 
         getServer().getPluginManager().registerEvents(new AnimalsEvent(this), this);
         getCommand("animalsbodyguards").setExecutor(new CommandAnimalsBodyGuards(this));
@@ -123,6 +123,7 @@ public class AnimalsBodyGuards extends JavaPlugin {
         bodyguardstypes.add(EntityType.ZOMBIFIED_PIGLIN);
 
         configurationoptions.put("bodyguards_die_with_their_master", getConfig().getString("bodyguards_die_with_their_master"));
+        configurationoptions.put("special_names", getConfig().getString("special_names"));
 
         // All you have to do is adding the following two lines in your onEnable method.
         // You can find the plugin ids of your plugins on the page https://bstats.org/what-is-my-plugin-id
@@ -143,8 +144,10 @@ public class AnimalsBodyGuards extends JavaPlugin {
                 bodyguardsmap.getKey().setCustomNameVisible(CustomNameWasVisible.get(bodyguardsmap.getKey()));
             }
 
-            for(Entity bodyguard : bodyguardsmap.getValue()){
-                bodyguard.remove();
+            if(bodyguardsmap.getValue().size() > 0){
+                for(Entity bodyguard : bodyguardsmap.getValue()){
+                    bodyguard.remove();
+                }
             }
         }
 
@@ -179,7 +182,7 @@ public class AnimalsBodyGuards extends JavaPlugin {
             dragon.setPhase(EnderDragon.Phase.CHARGE_PLAYER);
         }
 
-        String entityname = damagedentity.getType().name();
+        String entityname;
 
         if(damagedentity.getCustomName() == null){
             if(getAnimalstypescount().containsKey(damagedentity.getType())){
@@ -200,13 +203,31 @@ public class AnimalsBodyGuards extends JavaPlugin {
                     prefix = "rd";
                     break;
             }
-            damagedentity.setCustomName("§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString());
-            damagedentity.setCustomNameVisible(true);
-        }
-        entityname = damagedentity.getCustomName();
+            if(Boolean.parseBoolean(getConfigurationoptions().get("special_names"))){
+                damagedentity.setCustomName("§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString());
+                damagedentity.setCustomNameVisible(true);
+            }
 
-        bodyguard.setCustomName("§a§l" + entityname + "§b§l's §6§lBodyGuard");
-        bodyguard.setCustomNameVisible(true);
+            entityname = "§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString();
+
+            if(!customname.containsKey(damagedentity)){
+                customname.put(damagedentity, "§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString());
+            }
+        } else {
+            entityname = damagedentity.getCustomName();
+        }
+
+        previouscustomname.put(bodyguard, bodyguard.getCustomName());
+
+        if(Boolean.parseBoolean(getConfigurationoptions().get("special_names"))){
+            bodyguard.setCustomName("§a§l" + entityname + "§b§l's §6§lBodyGuard");
+            bodyguard.setCustomNameVisible(true);
+        }
+
+        if(!customname.containsKey(bodyguard)){
+            customname.put(bodyguard, "§a§l" + entityname + "§b§l's §6§lBodyGuard");
+        }
+
         if(bodyguard instanceof Creature){
             ((Creature) bodyguard).setRemoveWhenFarAway(true);
         }
@@ -291,8 +312,8 @@ public class AnimalsBodyGuards extends JavaPlugin {
         return CustomNameWasVisible;
     }
 
-    public List<Entity> getTestsmorts() {
-        return testsmorts;
+    public Map<Entity, String> getPreviousCustomName() {
+        return previouscustomname;
     }
 
     public HashMap<Entity, Entity> getLastdamager() {
@@ -301,5 +322,9 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     public Map<String, String> getConfigurationoptions() {
         return configurationoptions;
+    }
+
+    public Map<Entity, String> getCustomname() {
+        return customname;
     }
 }

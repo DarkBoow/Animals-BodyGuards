@@ -1,6 +1,5 @@
 package fr.darkbow_.animalsbodyguards;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,11 +21,6 @@ public class AnimalsEvent implements Listener {
         } else {
             damager = event.getDamager();
         }
-
-        /*if(event.getEntity() instanceof Player){
-            Bukkit.broadcastMessage("§a§l" + damager.getType().name());
-        }*/
-
         boolean cancelled = false;
 
 
@@ -76,10 +70,9 @@ public class AnimalsEvent implements Listener {
                         ((Creature) newbodyguard).setTarget((LivingEntity) damager);
                     }
                 }
-
-                //Ciblage Auto Si Pas De Cible
             }
 
+            //Ciblage Auto Si Pas De Cible
             if(main.getBodyguardsowner().containsKey(event.getEntity())){
                 newtarget = true;
                 master = main.getBodyguardsowner().get(event.getEntity());
@@ -134,8 +127,6 @@ public class AnimalsEvent implements Listener {
                         }
 
                         deathmessage += "§r.";
-
-                        /*Bukkit.broadcastMessage(deathmessage);*/
                     }
                 }
             }
@@ -145,14 +136,6 @@ public class AnimalsEvent implements Listener {
                     main.spawnBodyGuard(event.getEntity(), null);
                 }
             }
-        }
-    }
-
-    @EventHandler
-    public void onSpawnEntity(CreatureSpawnEvent event){
-        if(event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG){
-            main.getTestsmorts().add(event.getEntity());
-            /*Bukkit.broadcastMessage("§aNouvelle Entité Spawnée !");*/
         }
     }
 
