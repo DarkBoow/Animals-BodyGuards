@@ -74,7 +74,6 @@ public class AnimalsBodyGuards extends JavaPlugin {
         PassiveEntityTypes.add(EntityType.DOLPHIN);
         PassiveEntityTypes.add(EntityType.DONKEY);
         PassiveEntityTypes.add(EntityType.FOX);
-        PassiveEntityTypes.add(EntityType.IRON_GOLEM);
         PassiveEntityTypes.add(EntityType.LLAMA);
         PassiveEntityTypes.add(EntityType.MUSHROOM_COW);
         PassiveEntityTypes.add(EntityType.OCELOT);
@@ -105,6 +104,7 @@ public class AnimalsBodyGuards extends JavaPlugin {
         bodyguardstypes.add(EntityType.HOGLIN);
         bodyguardstypes.add(EntityType.HUSK);
         bodyguardstypes.add(EntityType.ILLUSIONER);
+        bodyguardstypes.add(EntityType.IRON_GOLEM);
         bodyguardstypes.add(EntityType.PHANTOM);
         bodyguardstypes.add(EntityType.PILLAGER);
         bodyguardstypes.add(EntityType.RAVAGER);

@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Animals-BodyGuards" />
+        <module name="Animals_BodyGuards" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Animals-BodyGuards" target="8" />
+      <module name="Animals_BodyGuards" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>

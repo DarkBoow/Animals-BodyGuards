@@ -1,1 +1,6 @@
 bodyguards_die_with_their_master: false
+special_names: true
+
+#The following actions applies on server reload, restart, stop or crash.
+kill_bodyguards: true
+keep_old_names: true
