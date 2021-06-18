@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.darkbow_</groupId>
   <artifactId>Animals_BodyGuards</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
   <build>
     <plugins>
       <plugin>
@@ -37,9 +37,31 @@
   <dependencies>
     <dependency>
       <groupId>org.spigotmc</groupId>
-      <artifactId>spigot</artifactId>
-      <version>1.16.4-R0.1-SNAPSHOT</version>
+      <artifactId>spigot-api</artifactId>
+      <version>1.16.5-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-lang</artifactId>
+          <groupId>commons-lang</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>guava</artifactId>
+          <groupId>com.google.guava</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>gson</artifactId>
+          <groupId>com.google.code.gson</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>bungeecord-chat</artifactId>
+          <groupId>net.md-5</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>snakeyaml</artifactId>
+          <groupId>org.yaml</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
   <properties>

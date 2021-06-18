@@ -6,7 +6,7 @@
 
     <groupId>fr.darkbow_</groupId>
     <artifactId>Animals_BodyGuards</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 
     <repositories>
         <repository>
@@ -18,8 +18,8 @@
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.16.4-R0.1-SNAPSHOT</version>
+            <artifactId>spigot-api</artifactId>
+            <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 

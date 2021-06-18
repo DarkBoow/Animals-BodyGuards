@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Animals-BodyGuards.iml" filepath="$PROJECT_DIR$/.idea/Animals-BodyGuards.iml" />
       <module fileurl="file://$PROJECT_DIR$/Animals_BodyGuards.iml" filepath="$PROJECT_DIR$/Animals_BodyGuards.iml" />
     </modules>
   </component>
