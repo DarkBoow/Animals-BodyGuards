@@ -14,13 +14,14 @@ public class AnimalsEvent implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
-        Entity damager = null;
+        Entity damager;
 
         if(event.getDamager() instanceof Projectile) {
             damager = (Entity) ((Projectile) event.getDamager()).getShooter();
         } else {
             damager = event.getDamager();
         }
+
         boolean cancelled = false;
 
 
@@ -41,33 +42,35 @@ public class AnimalsEvent implements Listener {
             }
         }
 
-
         //Apparition de BodyGuard
         if(!cancelled){
             boolean newtarget = false;
             Entity master = null;
-            if(event.getEntity() instanceof Animals || main.getPassiveEntityTypes().contains(event.getEntityType())){
+            if(main.getPassiveEntityTypes().contains(event.getEntityType())){
                 newtarget = true;
 
-                Entity newbodyguard = main.spawnBodyGuard(event.getEntity(), damager);
-                master = event.getEntity();
-                main.getBodyguardsowner().put(newbodyguard, event.getEntity());
-                if(!main.getDefendOwner().containsKey(event.getEntity())){
-                    main.getDefendOwner().put(event.getEntity(), new ArrayList<>());
-                }
+                if(!main.getBodyguardsowner().containsKey(event.getEntity())){
+                    Entity newbodyguard = main.spawnBodyGuard(event.getEntity(), damager);
 
-                if(!main.getDefendOwner().get(event.getEntity()).contains(damager)){
-                    if(!main.getTargets().containsKey(damager)){
-                        main.getTargets().put(damager, new ArrayList<>());
+                    master = event.getEntity();
+                    main.getBodyguardsowner().put(newbodyguard, event.getEntity());
+                    if(!main.getDefendOwner().containsKey(event.getEntity())){
+                        main.getDefendOwner().put(event.getEntity(), new ArrayList<>());
                     }
 
-                    main.getTargets().get(damager).add(event.getEntity());
-                    main.getDefendOwner().get(event.getEntity()).add(damager);
-                }
+                    if(!main.getDefendOwner().get(event.getEntity()).contains(damager)){
+                        if(!main.getTargets().containsKey(damager)){
+                            main.getTargets().put(damager, new ArrayList<>());
+                        }
 
-                if(damager instanceof LivingEntity){
-                    if(newbodyguard instanceof Creature){
-                        ((Creature) newbodyguard).setTarget((LivingEntity) damager);
+                        main.getTargets().get(damager).add(event.getEntity());
+                        main.getDefendOwner().get(event.getEntity()).add(damager);
+                    }
+
+                    if(damager instanceof LivingEntity){
+                        if(newbodyguard instanceof Creature){
+                            ((Creature) newbodyguard).setTarget((LivingEntity) damager);
+                        }
                     }
                 }
             }
@@ -120,20 +123,16 @@ public class AnimalsEvent implements Listener {
             if(main.getBodyguards().containsKey(event.getEntity()) || main.getBodyguardsowner().containsKey(event.getEntity())){
                 if(event.getEntity() instanceof LivingEntity){
                     if(((LivingEntity) event.getEntity()).getHealth() - event.getFinalDamage() <= 0){
-                        String deathmessage = event.getEntity().getCustomName() + " §rest mort de §b§l" + event.getCause();
-                        if(main.getLastdamager().containsKey(event.getEntity())){
-                            deathmessage += " §rpar §a§l" + main.getLastdamager().get(event.getEntity()).getCustomName();
-                            main.getLastdamager().remove(event.getEntity());
-                        }
-
-                        deathmessage += "§r.";
+                        main.getLastdamager().remove(event.getEntity());
                     }
                 }
             }
 
-            if(event.getEntity() instanceof Animals || main.getPassiveEntityTypes().contains(event.getEntityType())){
-                if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.VOID){
-                    main.spawnBodyGuard(event.getEntity(), null);
+            if(!main.getBodyguardsowner().containsKey(event.getEntity())){
+                if(main.getPassiveEntityTypes().contains(event.getEntityType())){
+                    if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.VOID){
+                        main.spawnBodyGuard(event.getEntity(), null);
+                    }
                 }
             }
         }
@@ -145,9 +144,7 @@ public class AnimalsEvent implements Listener {
         if(main.getBodyguards().containsKey(event.getEntity())){
             if(!main.getTargets().isEmpty()){
                 for(Map.Entry<Entity, List<Entity>> targetsmap : main.getTargets().entrySet()){
-                    if(targetsmap.getValue().contains(event.getEntity())){
-                        targetsmap.getValue().remove(event.getEntity());
-                    }
+                    targetsmap.getValue().remove(event.getEntity());
                 }
             }
 
@@ -203,9 +200,7 @@ public class AnimalsEvent implements Listener {
                 for(Entity master : masters){
                     if(master instanceof LivingEntity){
                         if(main.getDefendOwner().containsKey(event.getEntity())){
-                            if(main.getDefendOwner().get(master).contains(event.getEntity())){
-                                main.getDefendOwner().get(master).remove(event.getEntity());
-                            }
+                            main.getDefendOwner().get(master).remove(event.getEntity());
 
                             if(!main.getDefendOwner().get(master).isEmpty()){
                                 for(Entity bodyguard : main.getBodyguards().get(master)){

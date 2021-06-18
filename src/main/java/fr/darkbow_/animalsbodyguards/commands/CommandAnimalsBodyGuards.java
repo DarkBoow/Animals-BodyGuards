@@ -24,7 +24,7 @@ public class CommandAnimalsBodyGuards implements CommandExecutor {
             if(args[0].equalsIgnoreCase("mode")){
                 main.getConfigurationoptions().put("bodyguards_die_with_their_master", String.valueOf(!Boolean.parseBoolean(main.getConfigurationoptions().get("bodyguards_die_with_their_master"))));
                 main.getConfig().set("bodyguards_die_with_their_master", Boolean.parseBoolean(main.getConfigurationoptions().get("bodyguards_die_with_their_master")));
-                String message = "";
+                String message;
                 if(Boolean.parseBoolean(main.getConfigurationoptions().get("bodyguards_die_with_their_master"))){
                     message = "§c§lDIE";
                 } else {
@@ -36,7 +36,7 @@ public class CommandAnimalsBodyGuards implements CommandExecutor {
             } else if(args[0].equalsIgnoreCase("names")) {
                 main.getConfigurationoptions().put("special_names", String.valueOf(!Boolean.parseBoolean(main.getConfigurationoptions().get("special_names"))));
                 main.getConfig().set("special_names", Boolean.parseBoolean(main.getConfigurationoptions().get("special_names")));
-                String status = "";
+                String status;
                 if(Boolean.parseBoolean(main.getConfigurationoptions().get("special_names"))){
                     status = "§aON";
                     if(!main.getBodyguards().isEmpty()){

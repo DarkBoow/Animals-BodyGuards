@@ -1,7 +1,3 @@
 fr\darkbow_\animalsbodyguards\AnimalsBodyGuards.class
-fr\darkbow_\animalsbodyguards\Titles.class
-fr\darkbow_\animalsbodyguards\scoreboard\ScoreboardSign$1.class
-fr\darkbow_\animalsbodyguards\commands\CommandAnimalsBodyGuards.class
-fr\darkbow_\animalsbodyguards\scoreboard\ScoreboardSign$VirtualTeam.class
-fr\darkbow_\animalsbodyguards\scoreboard\ScoreboardSign.class
 fr\darkbow_\animalsbodyguards\AnimalsEvent.class
+fr\darkbow_\animalsbodyguards\commands\CommandAnimalsBodyGuards.class

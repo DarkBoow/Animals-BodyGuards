@@ -1,25 +1,17 @@
 package fr.darkbow_.animalsbodyguards;
 
 import fr.darkbow_.animalsbodyguards.commands.CommandAnimalsBodyGuards;
-import fr.darkbow_.animalsbodyguards.scoreboard.ScoreboardSign;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
 public class AnimalsBodyGuards extends JavaPlugin {
-    public static BukkitTask task;
-    private AnimalsBodyGuards instance;
-    public Titles title = new Titles();
-
-    private Map<Player, ScoreboardSign> boards;
     private Map<Entity, List<Entity>> bodyguards;
     private Map<Entity, Entity> bodyguardsowner;
     private List<EntityType> bodyguardstypes;
-    private Map<Entity, Entity> damagers;
     private Map<EntityType, Integer> animalstypescount;
     private Map<Entity, String> previouscustomname;
     private Map<Entity, String> customname;
@@ -33,22 +25,15 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     private Map<String, String> configurationoptions;
 
-    public AnimalsBodyGuards getInstance() {
-        return this.instance;
-    }
-
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        instance = this;
 
-        this.boards = new HashMap<>();
         this.configurationoptions = new HashMap<>();
 
         this.PassiveEntityTypes = new ArrayList<>();
         this.bodyguards = new HashMap<>();
         this.bodyguardstypes = new ArrayList<>();
-        this.damagers = new HashMap<>();
         this.animalstypescount = new HashMap<>();
         this.DefendOwner = new HashMap<>();
         this.targets = new HashMap<>();
@@ -59,7 +44,7 @@ public class AnimalsBodyGuards extends JavaPlugin {
         this.customname = new HashMap<>();
 
         getServer().getPluginManager().registerEvents(new AnimalsEvent(this), this);
-        getCommand("animalsbodyguards").setExecutor(new CommandAnimalsBodyGuards(this));
+        Objects.requireNonNull(getCommand("animalsbodyguards")).setExecutor(new CommandAnimalsBodyGuards(this));
 
         PassiveEntityTypes.add(EntityType.HORSE);
         PassiveEntityTypes.add(EntityType.MULE);
@@ -128,7 +113,7 @@ public class AnimalsBodyGuards extends JavaPlugin {
         // All you have to do is adding the following two lines in your onEnable method.
         // You can find the plugin ids of your plugins on the page https://bstats.org/what-is-my-plugin-id
         int pluginId = 10684; // <-- Replace with the id of your plugin!
-        Metrics metrics = new Metrics(this, pluginId);
+        new Metrics(this, pluginId);
 
         System.out.println("[Animals BodyGuards] Plugin ON!");
     }
@@ -204,14 +189,14 @@ public class AnimalsBodyGuards extends JavaPlugin {
                     break;
             }
             if(Boolean.parseBoolean(getConfigurationoptions().get("special_names"))){
-                damagedentity.setCustomName("§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString());
+                damagedentity.setCustomName("§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType());
                 damagedentity.setCustomNameVisible(true);
             }
 
-            entityname = "§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString();
+            entityname = "§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType();
 
             if(!customname.containsKey(damagedentity)){
-                customname.put(damagedentity, "§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType().toString());
+                customname.put(damagedentity, "§a§l" + getAnimalstypescount().get(damagedentity.getType()) + prefix + " §6§l" + damagedentity.getType());
             }
         } else {
             entityname = damagedentity.getCustomName();
@@ -272,20 +257,12 @@ public class AnimalsBodyGuards extends JavaPlugin {
         return bodyguard;
     }
 
-    public Map<Player, ScoreboardSign> getBoards(){
-        return this.boards;
-    }
-
     public Map<Entity, List<Entity>> getBodyguards() {
         return bodyguards;
     }
 
     public List<EntityType> getBodyGuardsTypes(){
         return bodyguardstypes;
-    }
-
-    public Map<Entity, Entity> getDamagers() {
-        return damagers;
     }
 
     public Map<EntityType, Integer> getAnimalstypescount() {
