@@ -24,7 +24,6 @@ public class AnimalsEvent implements Listener {
 
         boolean cancelled = false;
 
-
         //Protection BodyGuards et Owner
         if(main.getBodyguards().containsKey(event.getEntity())){
             if(main.getBodyguards().get(event.getEntity()).contains(damager)){
@@ -120,18 +119,20 @@ public class AnimalsEvent implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event){
         if(event.getCause() != EntityDamageEvent.DamageCause.VOID && !event.getCause().name().contains("ENTITY") && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE){
-            if(main.getBodyguards().containsKey(event.getEntity()) || main.getBodyguardsowner().containsKey(event.getEntity())){
-                if(event.getEntity() instanceof LivingEntity){
-                    if(((LivingEntity) event.getEntity()).getHealth() - event.getFinalDamage() <= 0){
-                        main.getLastdamager().remove(event.getEntity());
+            if(main.getConfig().getBoolean("bodyguardateverydamage")){
+                if(main.getBodyguards().containsKey(event.getEntity()) || main.getBodyguardsowner().containsKey(event.getEntity())){
+                    if(event.getEntity() instanceof LivingEntity){
+                        if(((LivingEntity) event.getEntity()).getHealth() - event.getFinalDamage() <= 0){
+                            main.getLastdamager().remove(event.getEntity());
+                        }
                     }
                 }
-            }
 
-            if(!main.getBodyguardsowner().containsKey(event.getEntity())){
-                if(main.getPassiveEntityTypes().contains(event.getEntityType())){
-                    if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.VOID){
-                        main.spawnBodyGuard(event.getEntity(), null);
+                if(!main.getBodyguardsowner().containsKey(event.getEntity())){
+                    if(main.getPassiveEntityTypes().contains(event.getEntityType())){
+                        if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK && event.getCause() != EntityDamageEvent.DamageCause.VOID){
+                            main.spawnBodyGuard(event.getEntity(), null);
+                        }
                     }
                 }
             }
