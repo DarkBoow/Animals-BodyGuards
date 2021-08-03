@@ -2,10 +2,16 @@ package fr.darkbow_.animalsbodyguards;
 
 import fr.darkbow_.animalsbodyguards.commands.CommandAnimalsBodyGuards;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class AnimalsBodyGuards extends JavaPlugin {
@@ -25,9 +31,13 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     private Map<String, String> configurationoptions;
 
+    private File savesfile;
+    private FileConfiguration savesconfig;
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        createSavesFile();
 
         this.configurationoptions = new HashMap<>();
 
@@ -107,6 +117,50 @@ public class AnimalsBodyGuards extends JavaPlugin {
         bodyguardstypes.add(EntityType.ZOMBIE_VILLAGER);
         bodyguardstypes.add(EntityType.ZOMBIFIED_PIGLIN);
 
+        if(getSavesConfig().contains("count")){
+            for(String typecount : Objects.requireNonNull(getSavesConfig().getConfigurationSection("count")).getKeys(false)){
+                getAnimalstypescount().put(EntityType.valueOf(typecount), getSavesConfig().getInt("count." + typecount));
+            }
+        }
+
+        for(String owner : getSavesConfig().getKeys(false)){
+            if(!owner.equals("count")){
+                if(Bukkit.getEntity(UUID.fromString(owner)) != null){
+                    List<Entity> savedbodyguards = new ArrayList<>();
+                    for(String bodyguard : Objects.requireNonNull(getSavesConfig().getConfigurationSection(owner + ".bodyguards")).getKeys(false)){
+                        savedbodyguards.add(Bukkit.getEntity(UUID.fromString(bodyguard)));
+                        getBodyguardsowner().put(Bukkit.getEntity(UUID.fromString(bodyguard)), Bukkit.getEntity(UUID.fromString(owner)));
+                        if(getSavesConfig().contains(owner + ".bodyguards." + bodyguard + ".target") && !Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")).isEmpty()){
+                            if(Bukkit.getEntity(UUID.fromString(Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")))) != null){
+                                ((Creature) Objects.requireNonNull(Bukkit.getEntity(UUID.fromString(bodyguard)))).setTarget((LivingEntity) Bukkit.getEntity(UUID.fromString(Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")))));
+                            }
+                        }
+                    }
+
+                    if(!savedbodyguards.isEmpty()){
+                        getBodyguards().put(Bukkit.getEntity(UUID.fromString(owner)), savedbodyguards);
+                    }
+
+                    if(!getSavesConfig().getStringList(owner + ".targets").isEmpty()){
+                        List<Entity> savedtargets = new ArrayList<>();
+                        List<String> savedtargetslist = getSavesConfig().getStringList(Bukkit.getEntity(UUID.fromString(owner)) + ".targets");
+                        for(String target : savedtargetslist){
+                            savedtargets.add(Bukkit.getEntity(UUID.fromString(target)));
+                            if(!getTargets().containsKey(Bukkit.getEntity(UUID.fromString(target)))){
+                                getTargets().put(Bukkit.getEntity(UUID.fromString(target)), new ArrayList<>());
+                            }
+
+                            getTargets().get(Bukkit.getEntity(UUID.fromString(target))).add(Bukkit.getEntity(UUID.fromString(owner)));
+                        }
+
+                        if(!savedtargets.isEmpty()){
+                            getDefendOwner().put(Bukkit.getEntity(UUID.fromString(owner)), savedtargets);
+                        }
+                    }
+                }
+            }
+        }
+
         configurationoptions.put("bodyguards_die_with_their_master", getConfig().getString("bodyguards_die_with_their_master"));
         configurationoptions.put("special_names", getConfig().getString("special_names"));
 
@@ -120,23 +174,82 @@ public class AnimalsBodyGuards extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for(Map.Entry<Entity, List<Entity>> bodyguardsmap : getBodyguards().entrySet()){
-            if(previouscustomname.containsKey(bodyguardsmap.getKey())){
-                bodyguardsmap.getKey().setCustomName(previouscustomname.get(bodyguardsmap.getKey()));
-            }
-
-            if(CustomNameWasVisible.containsKey(bodyguardsmap.getKey())){
-                bodyguardsmap.getKey().setCustomNameVisible(CustomNameWasVisible.get(bodyguardsmap.getKey()));
-            }
-
-            if(bodyguardsmap.getValue().size() > 0){
-                for(Entity bodyguard : bodyguardsmap.getValue()){
-                    bodyguard.remove();
+        if(getSavesConfig().contains("count")){
+            for(String entitytype : Objects.requireNonNull(getSavesConfig().getConfigurationSection("count")).getKeys(false)){
+                if(!getAnimalstypescount().containsKey(EntityType.valueOf(entitytype))){
+                    getSavesConfig().set("count." + entitytype, null);
                 }
             }
         }
 
+        for(Map.Entry<EntityType, Integer> entitytypecountmap : getAnimalstypescount().entrySet()){
+            getSavesConfig().set("count." + entitytypecountmap.getKey().toString(), entitytypecountmap.getValue());
+        }
+
+        if(!getBodyguards().isEmpty()){
+            for(Map.Entry<Entity, List<Entity>> bodyguardsmap : getBodyguards().entrySet()){
+                if(bodyguardsmap.getValue().size() > 0){
+                    List<String> bodyguardsuuidlist = new ArrayList<>();
+                    for(Entity bodyguard : bodyguardsmap.getValue()){
+                        bodyguardsuuidlist.add(bodyguard.getUniqueId().toString());
+                    }
+                    getSavesConfig().set(bodyguardsmap.getKey().getUniqueId() + ".bodyguards", bodyguardsuuidlist);
+
+                    for(String bodyguard : bodyguardsuuidlist){
+                        if(Bukkit.getEntity(UUID.fromString(bodyguard)) != null){
+                            if(Bukkit.getEntity(UUID.fromString(bodyguard)) instanceof Creature){
+                                if(((Creature) Objects.requireNonNull(Bukkit.getEntity(UUID.fromString(bodyguard)))).getTarget() != null){
+                                    getSavesConfig().set(bodyguardsmap.getKey().getUniqueId() + ".bodyguards." + bodyguard + ".target", Objects.requireNonNull(((Creature) Objects.requireNonNull(Bukkit.getEntity(UUID.fromString(bodyguard)))).getTarget()).getUniqueId().toString());
+                                }
+                            }
+                        }
+
+                        if(!getSavesConfig().contains(bodyguardsmap.getKey().getUniqueId() + ".bodyguards." + bodyguard + ".target")){
+                            getSavesConfig().set(bodyguardsmap.getKey().getUniqueId() + ".bodyguards." + bodyguard + ".target", "");
+                        }
+                    }
+
+                    List<String> targetsuuidlist = new ArrayList<>();
+                    if(getTargets().containsKey(bodyguardsmap.getKey()) && !getTargets().get(bodyguardsmap.getKey()).isEmpty()){
+                        for(Entity target : getTargets().get(bodyguardsmap.getKey())){
+                            targetsuuidlist.add(target.getUniqueId().toString());
+                        }
+                    }
+                    getSavesConfig().set(bodyguardsmap.getKey().getUniqueId() + ".targets", targetsuuidlist);
+                }
+            }
+        }
+
+        try {
+            getSavesConfig().save(getSavesFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         System.out.println("[Animals BodyGuards] Plugin OFF!");
+    }
+
+    public FileConfiguration getSavesConfig(){
+        return this.savesconfig;
+    }
+
+    public File getSavesFile(){
+        return this.savesfile;
+    }
+
+    private void createSavesFile(){
+        savesfile = new File(getDataFolder(), "saves.yml");
+        if(!savesfile.exists()){
+            savesfile.getParentFile().mkdirs();
+            saveResource("saves.yml", false);
+        }
+
+        savesconfig = new YamlConfiguration();
+        try {
+            savesconfig.load(savesfile);
+        } catch (IOException | InvalidConfigurationException e){
+            e.printStackTrace();
+        }
     }
 
     public Entity spawnBodyGuard(Entity damagedentity, Entity target){
