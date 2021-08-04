@@ -1,3 +1,6 @@
 bodyguards_die_with_their_master: false
 special_names: true
-bodyguardateverydamage: true
+bodyguardsspawnsat:
+  animalsnaturaldamages: true
+  entitiesdamageanimals: true
+  playersdamageanimals: true

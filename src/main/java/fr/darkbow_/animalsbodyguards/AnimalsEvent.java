@@ -15,28 +15,28 @@ public class AnimalsEvent implements Listener {
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
         Entity damager;
-
         if(event.getDamager() instanceof Projectile) {
             damager = (Entity) ((Projectile) event.getDamager()).getShooter();
         } else {
             damager = event.getDamager();
         }
 
-        boolean cancelled = false;
-
-        //Protection BodyGuards et Owner
-        if(main.getBodyguards().containsKey(event.getEntity())){
-            if(main.getBodyguards().get(event.getEntity()).contains(damager)){
-                cancelled = true;
-                event.setDamage(0);
-            }
-        }
-
-        if(main.getBodyguardsowner().containsKey(damager)){
-            if(main.getBodyguardsowner().containsKey(event.getEntity())){
-                if(main.getBodyguardsowner().get(damager) == main.getBodyguardsowner().get(event.getEntity())){
+        boolean cancelled = (damager instanceof Player && !main.getConfig().getBoolean("bodyguardsspawnsat.playersdamageanimals")) || (!(damager instanceof Player) && !main.getConfig().getBoolean("bodyguardsspawnsat.entitiesdamageanimals"));
+        if(!cancelled){
+            //Protection BodyGuards et Owner
+            if(main.getBodyguards().containsKey(event.getEntity())){
+                if(main.getBodyguards().get(event.getEntity()).contains(damager)){
                     cancelled = true;
                     event.setDamage(0);
+                }
+            }
+
+            if(main.getBodyguardsowner().containsKey(damager)){
+                if(main.getBodyguardsowner().containsKey(event.getEntity())){
+                    if(main.getBodyguardsowner().get(damager) == main.getBodyguardsowner().get(event.getEntity())){
+                        cancelled = true;
+                        event.setDamage(0);
+                    }
                 }
             }
         }
@@ -119,7 +119,7 @@ public class AnimalsEvent implements Listener {
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event){
         if(event.getCause() != EntityDamageEvent.DamageCause.VOID && !event.getCause().name().contains("ENTITY") && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE){
-            if(main.getConfig().getBoolean("bodyguardateverydamage")){
+            if(main.getConfig().getBoolean("bodyguardsspawnsat.animalsnaturaldamages")){
                 if(main.getBodyguards().containsKey(event.getEntity()) || main.getBodyguardsowner().containsKey(event.getEntity())){
                     if(event.getEntity() instanceof LivingEntity){
                         if(((LivingEntity) event.getEntity()).getHealth() - event.getFinalDamage() <= 0){
