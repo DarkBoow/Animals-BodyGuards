@@ -131,7 +131,8 @@ public class AnimalsBodyGuards extends JavaPlugin {
                         savedbodyguards.add(Bukkit.getEntity(UUID.fromString(bodyguard)));
                         getBodyguardsowner().put(Bukkit.getEntity(UUID.fromString(bodyguard)), Bukkit.getEntity(UUID.fromString(owner)));
                         if(getSavesConfig().contains(owner + ".bodyguards." + bodyguard + ".target") && !Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")).isEmpty()){
-                            if(Bukkit.getEntity(UUID.fromString(Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")))) != null){
+                            System.out.println("Yo : " + bodyguard);
+                            if(Bukkit.getEntity(UUID.fromString(bodyguard)) != null && Bukkit.getEntity(UUID.fromString(Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")))) != null){
                                 ((Creature) Objects.requireNonNull(Bukkit.getEntity(UUID.fromString(bodyguard)))).setTarget((LivingEntity) Bukkit.getEntity(UUID.fromString(Objects.requireNonNull(getSavesConfig().getString(owner + ".bodyguards." + bodyguard + ".target")))));
                             }
                         }

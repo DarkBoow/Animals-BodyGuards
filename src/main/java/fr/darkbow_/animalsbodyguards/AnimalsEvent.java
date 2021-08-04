@@ -172,17 +172,19 @@ public class AnimalsEvent implements Listener {
                         bodyguard.remove();
                     }
                 }
+
+                main.getBodyguards().remove(event.getEntity());
             }
 
-            main.getLastdamager().remove(event.getEntity());
-            main.getBodyguards().remove(event.getEntity());
+            /*main.getLastdamager().remove(event.getEntity());*/
+            /*main.getBodyguards().remove(event.getEntity());*/
         }
 
         //Mort d'un BodyGuard
         if(main.getBodyguardsowner().containsKey(event.getEntity())){
             if(main.getBodyguardsowner().get(event.getEntity()) instanceof LivingEntity && main.getBodyguardsowner().get(event.getEntity()) != null && !main.getBodyguardsowner().get(event.getEntity()).isDead()){
                 main.getBodyguards().get(main.getBodyguardsowner().get(event.getEntity())).remove(event.getEntity());
-                main.getBodyguardsowner().remove(event.getEntity());
+                /*main.getBodyguardsowner().remove(event.getEntity());*/
             }
         }
 
@@ -272,6 +274,19 @@ public class AnimalsEvent implements Listener {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onProjectile(ProjectileLaunchEvent event){
+        Entity shooter = (Entity) event.getEntity().getShooter();
+        if(main.getBodyguardsowner().containsKey(event.getEntity())){
+            if(shooter instanceof Creature){
+                Creature creature = (Creature) shooter;
+                if(creature.getTarget() == null){
+                    event.setCancelled(true);
                 }
             }
         }
